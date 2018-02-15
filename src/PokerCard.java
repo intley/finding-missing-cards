@@ -4,7 +4,10 @@
  * @description: Finding missing poker cards using a mapReduce solution
  */
 
-// Configuration libraries required for Hadoop & MapReduce
+
+import java.io.IOException;
+
+//Configuration libraries required for Hadoop & MapReduce
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -46,7 +49,17 @@ public class PokerCard extends Configured implements Tool {
 	public static void main(String[] args) throws Exception {
 		int status = ToolRunner.run(new PokerCard(), args);
 		System.exit(status);
-
 	}
 
+}
+
+class CardMapper extends Mapper <IntWritable, Text, Text, IntWritable> {
+	
+	public void map(IntWritable key, Text value, Context context) throws IOException, InterruptedException {
+		
+		String line = value.toString();
+		String [] field = line.split(":");
+		String suit = field[0], rank = field[1];
+		context.write(new Text(suit), new IntWritable(Integer.parseInt(rank)));
+	}
 }
