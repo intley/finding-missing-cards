@@ -6,6 +6,8 @@
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 //Configuration libraries required for Hadoop & MapReduce
 import org.apache.hadoop.conf.Configured;
@@ -61,5 +63,26 @@ class CardMapper extends Mapper <IntWritable, Text, Text, IntWritable> {
 		String [] field = line.split(":");
 		String suit = field[0], rank = field[1];
 		context.write(new Text(suit), new IntWritable(Integer.parseInt(rank)));
+	}
+}
+
+class CardReducer extends Reducer <Text, IntWritable, Text, IntWritable> {
+	
+	public void reduce(Text key, Iterable<IntWritable> cards, Context context) throws IOException, InterruptedException {
+		List<Integer> list = new ArrayList<>();
+		int rankSum = 0;
+		for (IntWritable card : cards) {
+			int rank = card.get();
+			list.add(rank);
+			rankSum += rank;			
+		}
+		
+		if (rankSum < 91) {
+			for (int i = 1; i <= 13; i ++) {
+				if (!list.contains(i)) {
+					context.write(key, new IntWritable(i));
+				}
+			}
+		}
 	}
 }
